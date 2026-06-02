@@ -227,15 +227,15 @@
     .cake-stage {
       position: relative;
       width: min(720px, 96vw);
-      height: 500px;
-      margin-top: 6px;
+      height: 430px;
+      margin-top: -34px;
       z-index: 4;
     }
 
     .cake {
       position: absolute;
       left: 50%;
-      top: 155px;
+      top: 92px;
       width: min(520px, 78vw);
       height: 310px;
       transform: translateX(-50%);
@@ -703,11 +703,12 @@
       }
 
       .cake-stage {
-        height: 465px;
+        height: 405px;
+        margin-top: -28px;
       }
 
       .cake {
-        top: 150px;
+        top: 90px;
         width: 88vw;
       }
 
@@ -790,7 +791,7 @@
 
   <div class="popup-layer" id="popupLayer">
     <div class="popup">
-      <h2 id="birthdayMessage">chúc mừng sinh nhật bé ☁️ 2 tháng 3 tủi nhó :&gt;&gt;</h2>
+      <h2 id="birthdayMessage">Chúc mừng bé sinh nhật 2 tháng 3 tuổi nhaaaa :&gt;&gt;</h2>
     </div>
   </div>
 
@@ -923,7 +924,7 @@
       clearTimeout(musicTimer);
       musicToggle.classList.remove("playing");
       musicLabel.textContent = "bật nhạc 🎵";
-      showMusicHint();
+      hideMusicHint();
     }
 
     async function toggleMusic() {
@@ -1032,7 +1033,7 @@
     }
 
     function showBirthdayPopup() {
-      birthdayMessage.textContent = "chúc mừng sinh nhật bé ☁️ 2 tháng 3 tủi nhó :>>";
+      birthdayMessage.textContent = "Chúc mừng bé sinh nhật 2 tháng 3 tuổi nhaaaa :>>";
       popupLayer.classList.add("show");
       launchConfetti();
     }
@@ -1053,6 +1054,8 @@
       }
     }
 
+    musicToggle.addEventListener("pointerdown", (event) => event.stopPropagation());
+    musicToggle.addEventListener("touchstart", (event) => event.stopPropagation());
     musicToggle.addEventListener("click", toggleMusic);
     window.addEventListener("pointerdown", unlockMusicByGesture, { once: true });
     window.addEventListener("keydown", unlockMusicByGesture, { once: true });
