@@ -85,7 +85,7 @@
       display: grid;
       place-items: center;
       overflow: hidden;
-      cursor: default;
+      cursor: pointer;
       position: relative;
       color: #d95794;
       text-align: center;
@@ -94,6 +94,7 @@
     }
 
     .photo-frame:hover {
+      transform: translateY(-2px) rotate(-1deg);
       box-shadow: 0 18px 36px rgba(255, 81, 143, 0.2);
     }
 
@@ -132,18 +133,6 @@
 
     .photo-frame.has-photo .photo-placeholder {
       display: none;
-    }
-
-    .photo-frame.missing-photo {
-      border-style: dashed;
-    }
-
-    .photo-frame.missing-photo img {
-      display: none;
-    }
-
-    .photo-frame.missing-photo .photo-placeholder {
-      display: grid;
     }
 
     .photo-input {
@@ -187,31 +176,6 @@
       animation: pulseNote 1s ease-in-out infinite;
     }
 
-    .music-hint {
-      position: fixed;
-      left: 18px;
-      bottom: 72px;
-      z-index: 81;
-      max-width: min(320px, calc(100vw - 36px));
-      border-radius: 999px;
-      padding: 11px 15px;
-      background: rgba(255, 255, 255, 0.96);
-      color: #d95794;
-      border: 2px solid rgba(255, 210, 231, 0.9);
-      box-shadow: 0 14px 34px rgba(255, 67, 144, 0.2);
-      font-size: 14px;
-      font-weight: 400;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(10px);
-      transition: opacity 0.24s ease, transform 0.24s ease;
-    }
-
-    .music-hint.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     @keyframes pulseNote {
       0%, 100% {
         transform: scale(1);
@@ -227,15 +191,15 @@
     .cake-stage {
       position: relative;
       width: min(720px, 96vw);
-      height: 350px;
-      margin-top: -58px;
+      height: 500px;
+      margin-top: 6px;
       z-index: 4;
     }
 
     .cake {
       position: absolute;
       left: 50%;
-      top: 20px;
+      top: 130px;
       width: min(520px, 78vw);
       height: 310px;
       transform: translateX(-50%);
@@ -696,19 +660,12 @@
         font-size: 14px;
       }
 
-      .music-hint {
-        left: 12px;
-        bottom: 64px;
-        font-size: 13px;
-      }
-
       .cake-stage {
-        height: 345px;
-        margin-top: -52px;
+        height: 465px;
       }
 
       .cake {
-        top: 18px;
+        top: 125px;
         width: 88vw;
       }
 
@@ -752,14 +709,14 @@
       <p class="only-text">Bánh sinh nhật này tui tự làm đó, bé thổi nến nhaaa</p>
 
       <div class="photo-area">
-        <div class="photo-frame has-photo" id="photoFrame" title="Ảnh được lấy từ thư mục assets">
-          <!-- Muốn đổi ảnh khi up GitHub: thay file assets/anh-cua-be.png bằng ảnh của bạn, giữ đúng tên file. -->
-          <img id="birthdayPhoto" src="assets/anh-cua-be.png" alt="Ảnh dễ thương của bé" />
+        <label class="photo-frame" id="photoFrame" title="Bấm để chèn ảnh">
+          <img id="birthdayPhoto" alt="Ảnh dễ thương của bé" />
           <span class="photo-placeholder">
             <strong>📷</strong>
-            chưa thấy ảnh nè, kiểm tra file assets/anh-cua-be.png nha
+            bấm vô đây để chèn ảnh nè
           </span>
-        </div>
+          <input class="photo-input" id="photoInput" type="file" accept="image/*" />
+        </label>
       </div>
 
       <section class="cake-stage" aria-label="Bánh sinh nhật có 23 cây nến">
@@ -791,7 +748,7 @@
 
   <div class="popup-layer" id="popupLayer">
     <div class="popup">
-      <h2 id="birthdayMessage">Chúc mừng bé sinh nhật 2 tháng 3 tuổi nhaaaa :&gt;&gt;</h2>
+      <h2 id="birthdayMessage">chúc mừng sinh nhật bé ☁️ 2 tháng 3 tủi nhó :&gt;&gt;</h2>
     </div>
   </div>
 
@@ -799,7 +756,6 @@
     <span class="note-dot"></span>
     <span id="musicLabel">bật nhạc 🎵</span>
   </button>
-  <div class="music-hint" id="musicHint">trình duyệt đang chặn tự phát nhạc, chạm 1 cái để bật nha 🎵</div>
 
   <script>
     const TOTAL_CANDLES = 23;
@@ -809,8 +765,8 @@
     const birthdayMessage = document.getElementById("birthdayMessage");
     const musicToggle = document.getElementById("musicToggle");
     const musicLabel = document.getElementById("musicLabel");
-    const musicHint = document.getElementById("musicHint");
     const photoFrame = document.getElementById("photoFrame");
+    const photoInput = document.getElementById("photoInput");
     const birthdayPhoto = document.getElementById("birthdayPhoto");
     const milestoneMessages = {
       6: "bé làm đúng òi đó, thổi tiếp i nhoo =)))",
@@ -825,11 +781,9 @@
     let audioCtx;
     let musicTimer;
     let musicPlaying = false;
-    let musicStarting = false;
     let melodyIndex = 0;
 
     // Giai điệu Happy Birthday dạng tiếng chuông nhỏ, không cần file âm thanh ngoài.
-    // Lưu ý: nhiều trình duyệt có thể chặn âm thanh tự phát cho tới khi người xem chạm/bấm vào trang.
     const birthdayMelody = [
       [392, 0.28], [392, 0.18], [440, 0.42], [392, 0.42], [523.25, 0.42], [493.88, 0.82],
       [392, 0.28], [392, 0.18], [440, 0.42], [392, 0.42], [587.33, 0.42], [523.25, 0.82],
@@ -838,13 +792,12 @@
       [0, 0.45]
     ];
 
-    async function ensureAudioContext() {
+    function ensureAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-
       if (audioCtx.state === "suspended") {
-        await audioCtx.resume();
+        audioCtx.resume();
       }
     }
 
@@ -854,37 +807,24 @@
 
       const now = audioCtx.currentTime;
       const oscillator = audioCtx.createOscillator();
-      const sparkle = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      const sparkleGain = audioCtx.createGain();
       const filter = audioCtx.createBiquadFilter();
 
-      // Âm lượng đã tăng lên để bấm “bật nhạc” là nghe rõ hơn.
       oscillator.type = "triangle";
-      sparkle.type = "sine";
       oscillator.frequency.setValueAtTime(freq, now);
-      sparkle.frequency.setValueAtTime(freq * 2, now);
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(2600, now);
+      filter.frequency.setValueAtTime(1800, now);
 
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.26, now + 0.025);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 0.88);
-
-      sparkleGain.gain.setValueAtTime(0.0001, now);
-      sparkleGain.gain.exponentialRampToValueAtTime(0.055, now + 0.02);
-      sparkleGain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 0.72);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 0.86);
 
       oscillator.connect(filter);
       filter.connect(gain);
-      sparkle.connect(sparkleGain);
       gain.connect(audioCtx.destination);
-      sparkleGain.connect(audioCtx.destination);
 
       oscillator.start(now);
-      sparkle.start(now);
       oscillator.stop(now + duration);
-      sparkle.stop(now + duration * 0.76);
     }
 
     function scheduleNextNote() {
@@ -896,42 +836,13 @@
       musicTimer = setTimeout(scheduleNextNote, duration * 1000);
     }
 
-    function showMusicHint() {
-      if (!musicHint || musicPlaying) return;
-      musicHint.classList.add("show");
-    }
-
-    function hideMusicHint() {
-      if (!musicHint) return;
-      musicHint.classList.remove("show");
-    }
-
-    async function startMusic() {
-      if (musicPlaying || musicStarting) return musicPlaying;
-
-      musicStarting = true;
-      try {
-        await ensureAudioContext();
-
-        if (!audioCtx || audioCtx.state !== "running") {
-          throw new Error("Autoplay was blocked");
-        }
-
-        musicPlaying = true;
-        musicStarting = false;
-        hideMusicHint();
-        musicToggle.classList.add("playing");
-        musicLabel.textContent = "tắt nhạc 🎵";
-        clearTimeout(musicTimer);
-        // Reset lại từ đầu bài để vừa bật là nghe nốt đầu tiên ngay.
-        melodyIndex = 0;
-        scheduleNextNote();
-        return true;
-      } catch (error) {
-        musicStarting = false;
-        showMusicHint();
-        return false;
-      }
+    function startMusic() {
+      if (musicPlaying) return;
+      ensureAudioContext();
+      musicPlaying = true;
+      musicToggle.classList.add("playing");
+      musicLabel.textContent = "tắt nhạc 🎵";
+      scheduleNextNote();
     }
 
     function stopMusic() {
@@ -939,40 +850,50 @@
       clearTimeout(musicTimer);
       musicToggle.classList.remove("playing");
       musicLabel.textContent = "bật nhạc 🎵";
-      hideMusicHint();
     }
 
-    async function toggleMusic() {
+    function toggleMusic() {
       if (musicPlaying) {
         stopMusic();
       } else {
-        await startMusic();
+        startMusic();
       }
     }
 
-    async function tryAutoplayMusic() {
-      // Thử bật ngay khi vừa vào trang. Trình duyệt nào cho phép thì sẽ nghe liền.
-      const started = await startMusic();
-
-      // Nếu bị chặn, hiện gợi ý để người xem chạm 1 lần là nhạc chạy.
-      if (!started) {
-        showMusicHint();
-      }
-    }
-
-    function unlockMusicByGesture() {
+    function autoStartMusicOnce() {
       startMusic();
-      window.removeEventListener("pointerdown", unlockMusicByGesture);
-      window.removeEventListener("keydown", unlockMusicByGesture);
-      window.removeEventListener("touchstart", unlockMusicByGesture);
+      window.removeEventListener("pointerdown", autoStartMusicOnce);
+      window.removeEventListener("keydown", autoStartMusicOnce);
     }
 
-    function checkFixedPhoto() {
-      birthdayPhoto.addEventListener("error", () => {
-        photoFrame.classList.remove("has-photo");
-        photoFrame.classList.add("missing-photo");
-      });
+    function loadSavedPhoto() {
+      try {
+        const savedPhoto = localStorage.getItem("panBirthdayPhoto");
+        if (savedPhoto) {
+          birthdayPhoto.src = savedPhoto;
+          photoFrame.classList.add("has-photo");
+        }
+      } catch (error) {
+        // Một số chế độ xem thử có thể chặn localStorage; ảnh vẫn chèn được trong phiên hiện tại.
+      }
     }
+
+    function saveSelectedPhoto(file) {
+      if (!file || !file.type.startsWith("image/")) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        birthdayPhoto.src = reader.result;
+        photoFrame.classList.add("has-photo");
+        try {
+          localStorage.setItem("panBirthdayPhoto", reader.result);
+        } catch (error) {
+          // Ảnh quá lớn thì vẫn hiển thị được trong phiên hiện tại, chỉ không lưu lại sau khi refresh.
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
 
     function createCandlesAroundCake() {
       candlesRing.innerHTML = "";
@@ -1048,7 +969,7 @@
     }
 
     function showBirthdayPopup() {
-      birthdayMessage.textContent = "Chúc mừng bé sinh nhật 2 tháng 3 tuổi nhaaaa :>>";
+      birthdayMessage.textContent = "chúc mừng sinh nhật bé ☁️ 2 tháng 3 tủi nhó :>>";
       popupLayer.classList.add("show");
       launchConfetti();
     }
@@ -1069,35 +990,14 @@
       }
     }
 
-    // Dùng pointerdown để âm thanh được bật ngay trong thao tác chạm/bấm,
-    // cách này ổn định hơn click trên Chrome/Safari mobile.
-    if (window.PointerEvent) {
-      musicToggle.addEventListener("pointerdown", async (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        await toggleMusic();
-      });
-      musicToggle.addEventListener("click", (event) => event.preventDefault());
-    } else {
-      musicToggle.addEventListener("touchstart", (event) => event.stopPropagation());
-      musicToggle.addEventListener("click", toggleMusic);
-    }
-
-    musicToggle.addEventListener("keydown", async (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        await toggleMusic();
-      }
-    });
-
-    window.addEventListener("pointerdown", unlockMusicByGesture, { once: true });
-    window.addEventListener("keydown", unlockMusicByGesture, { once: true });
-    window.addEventListener("touchstart", unlockMusicByGesture, { once: true });
+    musicToggle.addEventListener("click", toggleMusic);
+    photoInput.addEventListener("change", () => saveSelectedPhoto(photoInput.files[0]));
+    window.addEventListener("pointerdown", autoStartMusicOnce, { once: true });
+    window.addEventListener("keydown", autoStartMusicOnce, { once: true });
 
     window.addEventListener("load", () => {
-      checkFixedPhoto();
+      loadSavedPhoto();
       createCandlesAroundCake();
-      setTimeout(tryAutoplayMusic, 250);
     });
 
     let resizeTimer;
